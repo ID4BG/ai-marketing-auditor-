@@ -5,7 +5,7 @@ type StrategicInsightProps = {
 export function StrategicInsight({ insight }: StrategicInsightProps) {
   const hasInsight = insight?.trim();
   const formattedInsight = hasInsight
-    ? insight.replace(/\. /g, ".\n\n")
+    ? hasInsight.replace(/\. /g, ".\n\n")
     : "";
 
   return (
