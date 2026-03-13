@@ -21,6 +21,7 @@ function normalizeUrl(url: string) {
 
 async function fetchWebsite(url: string) {
   try {
+
     const res = await fetch(url, {
       headers: {
         "User-Agent": "AI Marketing Clarity Diagnostic"
@@ -30,12 +31,15 @@ async function fetchWebsite(url: string) {
     return await res.text()
 
   } catch (error) {
+
     console.error("Fetch failed:", url)
+
     return ""
   }
 }
 
 function safeJsonParse(text: string): any {
+
   const cleaned = text
     .replace(/```json/gi, "")
     .replace(/```/g, "")
@@ -49,18 +53,27 @@ function safeJsonParse(text: string): any {
 }
 
 function clampScore(n: unknown, fallback = 0) {
+
   const value = typeof n === "number" ? n : Number(n)
+
   if (!Number.isFinite(value)) return fallback
+
   return Math.max(0, Math.min(100, Math.round(value)))
 }
 
 function asString(v: unknown, fallback = "") {
+
   return typeof v === "string" ? v : fallback
 }
 
 function asStringArray(v: unknown, fallback: string[] = []) {
+
   if (!Array.isArray(v)) return fallback
-  return v.filter((x) => typeof x === "string").map((s) => s.trim()).filter(Boolean)
+
+  return v
+    .filter((x) => typeof x === "string")
+    .map((s) => s.trim())
+    .filter(Boolean)
 }
 
 /*
@@ -77,11 +90,14 @@ function extractMarketingSignals(html: string) {
     .replace(/\n/g, " ")
 
   const getFirstMatch = (regex: RegExp) => {
+
     const match = clean.match(regex)
+
     return match ? match[1].trim() : ""
   }
 
   const heroHeadline = getFirstMatch(/<h1[^>]*>(.*?)<\/h1>/i)
+
   const valueProposition = getFirstMatch(/<h2[^>]*>(.*?)<\/h2>/i)
 
   const ctas =
@@ -141,10 +157,13 @@ export async function POST(req: NextRequest) {
     try {
 
       await fetch(process.env.GOOGLE_SHEET_WEBHOOK as string, {
+
         method: "POST",
+
         headers: {
           "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
           website,
           linkedin,
@@ -153,9 +172,11 @@ export async function POST(req: NextRequest) {
           language
         })
       })
-    
+
     } catch (err) {
+
       console.error("Google Sheet lead save failed", err)
+
     }
 
     console.log("NEW LEAD:", {
@@ -168,6 +189,7 @@ export async function POST(req: NextRequest) {
     })
 
     if (!website) {
+
       return NextResponse.json(
         { error: "Website required" },
         { status: 400 }
@@ -181,6 +203,7 @@ export async function POST(req: NextRequest) {
     */
 
     const mainHTML = await fetchWebsite(website)
+
     const signals = extractMarketingSignals(mainHTML)
 
     /*
@@ -199,60 +222,98 @@ export async function POST(req: NextRequest) {
 
     /*
     ==========================================================
-    IMPROVED STRATEGIC PROMPT
+    STRATEGIC ANALYSIS PROMPT
     ==========================================================
     */
 
     const prompt = `
-You are a senior marketing strategist performing a practical marketing audit.
 
-Write the entire report in ${language === "ru" ? "Russian" :
+You are a senior marketing strategist performing a **strategic marketing diagnostic**.
+
+Write the report in ${
+      language === "ru" ? "Russian" :
       language === "es" ? "Spanish" :
-      language === "hy" ? "Armenian" : "English"}.
+      language === "hy" ? "Armenian" :
+      "English"
+    }.
 
-Your job is to identify **specific marketing problems and actionable improvements**.
+Your goal is to diagnose **real marketing weaknesses and strategic opportunities.**
 
-Every insight must follow this structure:
+Avoid generic marketing advice.
 
-Problem → Why it matters → Actionable Fix.
+Every insight must follow:
 
+Problem → Why it matters → Strategic Fix
+
+------------------------------------------------
 WEBSITE SIGNALS
+------------------------------------------------
 
-Hero Headline:
+Hero Headline
 ${signals.heroHeadline}
 
-Value Proposition:
+Value Proposition
 ${signals.valueProposition}
 
-Primary CTAs:
+Primary CTAs
 ${signals.ctas}
 
-Trust Signals:
+Trust Signals
 ${signals.trustSignals}
 
-Offer:
+Offer
 ${signals.offer}
 
+------------------------------------------------
 COMPETITOR SIGNALS
+------------------------------------------------
 
 ${JSON.stringify(competitorSignals)}
 
-Return ONLY valid JSON.
+------------------------------------------------
+ANALYZE THE FOLLOWING AREAS
+------------------------------------------------
 
-Output schema:
+1 Positioning  
+2 Messaging Clarity  
+3 Ideal Customer Definition  
+4 Funnel Effectiveness  
+
+------------------------------------------------
+RETURN VALID JSON
+------------------------------------------------
 
 {
-  "score": number,
-  "scores": {
-    "positioning": number,
-    "messaging": number,
-    "icp": number,
-    "funnel": number
-  },
-  "sections": [],
-  "competitive_gaps": [],
-  "strategic_insight": "",
-  "recommendations": []
+ "score": number,
+
+ "scores": {
+   "positioning": number,
+   "messaging": number,
+   "icp": number,
+   "funnel": number
+ },
+
+ "sections": [
+   {
+     "category": "Positioning | Messaging | ICP | Funnel",
+     "status": "strong | neutral | weak",
+     "problem": "",
+     "why_it_matters": "",
+     "fix": ""
+   }
+ ],
+
+ "competitive_gaps": [
+   "gap 1",
+   "gap 2"
+ ],
+
+ "strategic_insight": "",
+
+ "recommendations": [
+   "recommendation 1",
+   "recommendation 2"
+ ]
 }
 `
 
@@ -263,9 +324,13 @@ Output schema:
     */
 
     const completion = await openai.chat.completions.create({
+
       model: "gpt-4o-mini",
+
       temperature: 0.3,
+
       response_format: { type: "json_object" },
+
       messages: [
         {
           role: "system",
@@ -283,35 +348,55 @@ Output schema:
     const raw = safeJsonParse(text)
 
     if (!raw) {
-      return NextResponse.json(
-        {
-          score: 60,
-          scores: { positioning: 60, messaging: 60, icp: 60, funnel: 60 },
-          sections: [],
-          competitive_gaps: [],
-          strategic_insight: "",
-          recommendations: []
+
+      return NextResponse.json({
+
+        score: 60,
+
+        scores: {
+          positioning: 60,
+          messaging: 60,
+          icp: 60,
+          funnel: 60
         },
-        { status: 200 }
-      )
+
+        sections: [],
+
+        competitive_gaps: [],
+
+        strategic_insight: "",
+
+        recommendations: []
+
+      })
     }
 
     const scores = raw.scores ?? {}
 
     const shaped = {
+
       score: clampScore(raw.score, 60),
 
       scores: {
+
         positioning: clampScore(scores.positioning, 60),
+
         messaging: clampScore(scores.messaging, 60),
+
         icp: clampScore(scores.icp, 60),
+
         funnel: clampScore(scores.funnel, 60)
+
       },
 
-      sections: raw.sections ?? [],
+      sections: Array.isArray(raw.sections) ? raw.sections : [],
+
       competitive_gaps: asStringArray(raw.competitive_gaps, []),
+
       strategic_insight: asString(raw.strategic_insight, ""),
+
       recommendations: asStringArray(raw.recommendations, [])
+
     }
 
     return NextResponse.json(shaped)

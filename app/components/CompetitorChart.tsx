@@ -21,6 +21,7 @@ type CompetitorChartProps = {
   website?: string;
   competitor1?: string;
   competitor2?: string;
+  insight?: string;
 };
 
 const fallbackCompetitorData: CompetitorPoint[] = [
@@ -56,6 +57,7 @@ export const CompetitorChart: FC<CompetitorChartProps> = ({
   website,
   competitor1,
   competitor2,
+  insight,
 }) => {
   let pointsSource: CompetitorPoint[] | null = null;
 
@@ -186,12 +188,19 @@ export const CompetitorChart: FC<CompetitorChartProps> = ({
       </div>
 
       {/* INSIGHT */}
-      <p className="text-sm leading-relaxed text-zinc-600">
-        Your brand currently sits in a crowded mid-market position. The
-        strategic opportunity is to increase perceived authority through
-        clearer positioning and thought-leadership while targeting less
-        saturated segments of the market.
-      </p>
+      {insight && (
+  <div className="pt-4 border-t border-zinc-100">
+
+    <div className="text-xs uppercase tracking-wide text-zinc-400 mb-2">
+      Strategic Insight
+    </div>
+
+    <p className="text-sm leading-relaxed text-zinc-600">
+      {insight}
+    </p>
+
+  </div>
+)}
 
     </div>
   );

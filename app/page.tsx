@@ -162,7 +162,7 @@ export default function Page() {
             className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-5 rounded-md"
             onClick={runAudit}
           >
-            Run Diagnostic & Get Report
+            Run Diagnostic 
           </Button>
 
           {error && (
@@ -181,26 +181,57 @@ export default function Page() {
         {result && (
           <div ref={reportRef} className="space-y-16">
 
-            <ScoreSection score={score} breakdown={breakdownArray} />
+<div className="space-y-6">
+
+<ScoreSection score={score} breakdown={breakdownArray} />
+
+{/* DOWNLOAD REPORT BUTTON */}
+<div className="flex justify-start">
+  <Button
+  disabled={loading}
+    className="bg-zinc-900 hover:bg-zinc-800 text-white h-11 px-6 rounded-md"
+    onClick={() => {
+      if (reportRef.current) {
+        // @ts-ignore
+        toPDF(reportRef.current);
+      }
+    }}
+  >
+    Download Strategic Report (PDF)
+  </Button>
+</div>
+
+</div>
 
             <div className="grid gap-6 md:grid-cols-2">
 
-            {result.sections?.map((section: any, index: number) => (
+            {result.sections?.map((section: any, index: number) => {
+
+const severity =
+  section.status === "weak"
+    ? "critical"
+    : section.status === "neutral"
+    ? "opportunity"
+    : "neutral";
+
+return (
   <AnalysisCard
     key={index}
-    label={section.title}
-    title={section.priority}
-    content={
-      "Problem:\n" +
-      section.problem +
-      "\n\nWhy it matters:\n" +
-      section.why_it_matters +
-      "\n\nActionable fix:\n" +
-      section.actionable_fix
-    }
-    severity={section.priority === "High" ? "critical" : "neutral"}
+
+    label={section.category || "Analysis"}
+
+    title={section.problem || "Strategic insight"}
+
+    problem={section.problem}
+
+    why_it_matters={section.why_it_matters}
+
+    fix={section.fix}
+
+    severity={severity}
   />
-))}
+);
+})}
 
             </div>
 
@@ -214,9 +245,10 @@ export default function Page() {
                 <DashboardCompetitiveGaps gaps={gaps} />
 
                 <CompetitorChart
-                  website={website}
-                  competitor1={competitor1}
-                  competitor2={competitor2}
+                website={website}
+                competitor1={competitor1}
+                competitor2={competitor2}
+                insight={insight}
                 />
 
               </div>
