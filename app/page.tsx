@@ -1,12 +1,17 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { usePDF } from "react-to-pdf";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
+import { ScoreSection } from "./components/ScoreSection";
+import { AnalysisCard } from "./components/AnalysisCard";
+import { CompetitiveGaps as DashboardCompetitiveGaps } from "./components/CompetitiveGaps";
+import { StrategicInsight } from "./components/StrategicInsight";
 import { CTASection } from "./components/CTASection";
+import { CompetitorChart } from "./components/CompetitorChart";
 import { ReportLayout } from "./components/ReportLayout";
 
 import { runDiagnostic } from "../lib/api";
@@ -26,8 +31,6 @@ export default function Page() {
   const [result, setResult] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  const reportRef = useRef<HTMLDivElement | null>(null);
 
   const domain = website
     .replace(/^https?:\/\//, "")
@@ -183,36 +186,75 @@ export default function Page() {
 
           </div>
 
-          {/* REPORT */}
+          {/* REPORT UI */}
           {result && (
-            <div className="space-y-8">
+            <div className="space-y-16">
 
-              {/* DOWNLOAD BUTTON */}
-              <div className="flex justify-start">
-                <Button
-                  disabled={loading}
-                  className="bg-zinc-900 hover:bg-zinc-800 text-white h-11 px-6 rounded-md"
-                  onClick={downloadReport}
-                >
-                  Download Strategic Report (PDF)
-                </Button>
+              <div className="space-y-6">
+
+                <h1 className="text-2xl font-semibold text-zinc-900">
+                  Marketing Strategy Audit — {domain}
+                </h1>
+
+                <ScoreSection score={score} breakdown={breakdownArray} />
+
+                <div className="flex justify-start">
+                  <Button
+                    disabled={loading}
+                    className="bg-zinc-900 hover:bg-zinc-800 text-white h-11 px-6 rounded-md"
+                    onClick={downloadReport}
+                  >
+                    Download Strategic Report (PDF)
+                  </Button>
+                </div>
+
               </div>
 
-              {/* CLEAN REPORT LAYOUT */}
-              <div ref={targetRef}>
-                <ReportLayout
-                  website={website}
-                  competitor1={competitor1}
-                  competitor2={competitor2}
-                  score={score}
-                  breakdown={breakdownArray}
-                  sections={result.sections}
-                  gaps={gaps}
-                  insight={insight}
-                />
+              <div className="grid gap-6 md:grid-cols-2">
+
+                {result.sections?.map((section: any, index: number) => {
+
+                  const severity =
+                    section.status === "weak"
+                      ? "critical"
+                      : section.status === "neutral"
+                      ? "opportunity"
+                      : "neutral";
+
+                  return (
+                    <AnalysisCard
+                      key={index}
+                      label={section.category || "Analysis"}
+                      title={section.problem || "Strategic insight"}
+                      problem={section.problem}
+                      why_it_matters={section.why_it_matters}
+                      fix={section.fix}
+                      severity={severity}
+                    />
+                  );
+                })}
+
               </div>
 
-              {/* CTA */}
+              <div className="border-t pt-16">
+                <StrategicInsight insight={insight} />
+              </div>
+
+              <div className="border-t pt-16">
+                <div className="grid md:grid-cols-2 gap-8">
+
+                  <DashboardCompetitiveGaps gaps={gaps} />
+
+                  <CompetitorChart
+                    website={website}
+                    competitor1={competitor1}
+                    competitor2={competitor2}
+                    insight={insight}
+                  />
+
+                </div>
+              </div>
+
               <CTASection
                 onDownload={downloadReport}
                 shareUrl={shareUrl}
@@ -228,23 +270,23 @@ export default function Page() {
         </div>
       </div>
 
-      <style jsx global>{`
-        @media print {
-
-          body {
-            background: white !important;
-          }
-
-          .max-w-xl {
-            display: none !important;
-          }
-
-          button {
-            display: none !important;
-          }
-
-        }
-      `}</style>
+      {/* HIDDEN PDF LAYOUT */}
+      {result && (
+        <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+          <div ref={targetRef}>
+            <ReportLayout
+              website={website}
+              competitor1={competitor1}
+              competitor2={competitor2}
+              score={score}
+              breakdown={breakdownArray}
+              sections={result.sections}
+              gaps={gaps}
+              insight={insight}
+            />
+          </div>
+        </div>
+      )}
 
     </>
   );
