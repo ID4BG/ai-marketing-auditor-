@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { usePDF } from "react-to-pdf";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,8 +31,14 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const reportRef = useRef<HTMLDivElement | null>(null);
+
+  const { toPDF, targetRef } = usePDF({
+    filename: "marketing-audit-report.pdf",
+  });
+
   function downloadReport() {
-    window.print();
+    toPDF();
   }
 
   async function runAudit() {
@@ -177,7 +184,7 @@ export default function Page() {
 
           {/* REPORT */}
           {result && (
-            <div className="space-y-16">
+            <div ref={targetRef} className="space-y-16">
 
               <div className="space-y-6">
 
@@ -252,27 +259,11 @@ export default function Page() {
           )}
 
           <div className="text-center text-sm text-zinc-500 pt-12">
-            Built by <span className="font-medium text-zinc-700">Arnela</span> for founders — with love.
+            Built by <span className="font-medium text-zinc-700">Arnela</span> for founders - with love.
           </div>
 
         </div>
       </div>
-
-      <style jsx global>{`
-        @media print {
-          body {
-            background: white;
-          }
-
-          .max-w-xl {
-            display: none !important;
-          }
-
-          button {
-            display: none !important;
-          }
-        }
-      `}</style>
     </>
   );
 }
