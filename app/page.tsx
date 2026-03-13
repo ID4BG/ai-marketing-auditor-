@@ -185,19 +185,22 @@ export default function Page() {
 
             <div className="grid gap-6 md:grid-cols-2">
 
-              <AnalysisCard
-                label="Positioning"
-                title="Market Positioning"
-                content={result.positioning_analysis ?? ""}
-                severity="neutral"
-              />
-
-              <AnalysisCard
-                label="Messaging"
-                title="Messaging Analysis"
-                content={result.messaging_analysis ?? ""}
-                severity="neutral"
-              />
+            {result.sections?.map((section: any, index: number) => (
+  <AnalysisCard
+    key={index}
+    label={section.title}
+    title={section.priority}
+    content={
+      "Problem:\n" +
+      section.problem +
+      "\n\nWhy it matters:\n" +
+      section.why_it_matters +
+      "\n\nActionable fix:\n" +
+      section.actionable_fix
+    }
+    severity={section.priority === "High" ? "critical" : "neutral"}
+  />
+))}
 
             </div>
 
@@ -234,9 +237,9 @@ export default function Page() {
           </div>
         )}
 
-        <div className="text-center text-sm text-zinc-500 pt-12">
-          Built by <span className="font-medium text-zinc-700">Arnela</span>
-        </div>
+<div className="text-center text-sm text-zinc-500 pt-12">
+  Built by <span className="font-medium text-zinc-700">Arnela</span> for founders — with love.
+</div>
 
       </div>
     </div>
