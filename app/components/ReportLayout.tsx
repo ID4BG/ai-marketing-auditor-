@@ -34,87 +34,109 @@ export function ReportLayout({
     ?.split("/")[0];
 
   return (
-    <div className="bg-white p-12 space-y-16 max-w-[900px] mx-auto">
+    <>
+      <div className="bg-white p-12 space-y-16 max-w-[820px] mx-auto">
 
-  {/* COVER PAGE */}
-  <div className="min-h-[420px] flex flex-col justify-center items-center text-center border-b pb-12">
+        {/* COVER PAGE */}
+        <div className="min-h-[420px] flex flex-col justify-center items-center text-center border-b pb-12">
 
-    <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">
-      Marketing Strategy Audit
-    </h1>
+          <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">
+            Marketing Strategy Audit
+          </h1>
 
-    <p className="mt-4 text-lg text-zinc-500">
-      {domain}
-    </p>
+          <p className="mt-4 text-lg text-zinc-500">
+            {domain}
+          </p>
 
-    <div className="mt-12 text-sm text-zinc-400">
-      Prepared by
-    </div>
+          <div className="mt-12 text-sm text-zinc-400">
+            Prepared by
+          </div>
 
-    <div className="text-lg font-medium text-zinc-800">
-      Arnela
-    </div>
+          <div className="text-lg font-medium text-zinc-800">
+            Arnela
+          </div>
 
-    <div className="text-sm text-zinc-400">
-      AI Marketing Diagnostic
-    </div>
+          <div className="text-sm text-zinc-400">
+            AI Marketing Diagnostic
+          </div>
 
-  </div>
+        </div>
 
-  {/* REPORT HEADER */}
-  <div className="space-y-2 border-b pb-6">
-    <h2 className="text-2xl font-semibold">
-      Marketing Clarity Score
-    </h2>
-  </div>
+        {/* SCORE HEADER */}
+        <div className="space-y-2 border-b pb-6">
+          <h2 className="text-2xl font-semibold">
+            Marketing Clarity Score
+          </h2>
+        </div>
 
-      {/* SCORE */}
-      <ScoreSection score={score} breakdown={breakdown} />
+        {/* SCORE */}
+        <div className="avoid-break">
+          <ScoreSection score={score} breakdown={breakdown} />
+        </div>
 
-      {/* ANALYSIS */}
-      <div className="grid gap-6">
+        {/* ANALYSIS */}
+        <div className="space-y-6">
 
-        {sections?.map((section: any, index: number) => {
+          {sections?.map((section: any, index: number) => {
 
-          const severity =
-            section.status === "weak"
-              ? "critical"
-              : section.status === "neutral"
-              ? "opportunity"
-              : "neutral";
+            const severity =
+              section.status === "weak"
+                ? "critical"
+                : section.status === "neutral"
+                ? "opportunity"
+                : "neutral";
 
-          return (
-            <AnalysisCard
-              key={index}
-              label={section.category || "Analysis"}
-              title={section.problem || "Strategic insight"}
-              problem={section.problem}
-              why_it_matters={section.why_it_matters}
-              fix={section.fix}
-              severity={severity}
+            return (
+              <div key={index} className="avoid-break">
+                <AnalysisCard
+                  label={section.category || "Analysis"}
+                  title={section.problem || "Strategic insight"}
+                  problem={section.problem}
+                  why_it_matters={section.why_it_matters}
+                  fix={section.fix}
+                  severity={severity}
+                />
+              </div>
+            );
+          })}
+
+        </div>
+
+        {/* STRATEGIC INSIGHT */}
+        <div className="avoid-break">
+          <StrategicInsight insight={insight} />
+        </div>
+
+        {/* COMPETITOR SECTION */}
+        <div className="space-y-8">
+
+          <div className="avoid-break">
+            <CompetitiveGaps gaps={gaps} />
+          </div>
+
+          <div className="avoid-break">
+            <CompetitorChart
+              website={website}
+              competitor1={competitor1}
+              competitor2={competitor2}
+              insight={insight}
             />
-          );
-        })}
+          </div>
+
+        </div>
 
       </div>
 
-      {/* STRATEGIC INSIGHT */}
-      <StrategicInsight insight={insight} />
+      {/* PAGE BREAK CONTROL */}
+      <style jsx global>{`
 
-      {/* COMPETITOR SECTION */}
-      <div className="grid gap-8">
+        .avoid-break {
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
 
-        <CompetitiveGaps gaps={gaps} />
+      `}</style>
 
-        <CompetitorChart
-          website={website}
-          competitor1={competitor1}
-          competitor2={competitor2}
-          insight={insight}
-        />
-
-      </div>
-
-    </div>
+    </>
   );
 }
