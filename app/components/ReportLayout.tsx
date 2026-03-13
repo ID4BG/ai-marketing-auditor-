@@ -52,9 +52,6 @@ export function ReportLayout({
             Prepared by
           </div>
 
-          <div className="text-lg font-medium text-zinc-800">
-            Arnela
-          </div>
 
           <div className="text-sm text-zinc-400">
             AI Marketing Diagnostic
