@@ -33,87 +33,110 @@ export function ReportLayout({
     ?.replace(/^www\./, "")
     ?.split("/")[0];
 
+  const firstTwo = sections?.slice(0, 2);
+  const secondTwo = sections?.slice(2, 4);
+
+  function renderCard(section: any, index: number) {
+
+    const severity =
+      section.status === "weak"
+        ? "critical"
+        : section.status === "neutral"
+        ? "opportunity"
+        : "neutral";
+
+    return (
+      <div key={index} className="mb-10">
+
+        <AnalysisCard
+          label={section.category || "Analysis"}
+          title={section.problem || "Strategic insight"}
+          problem={section.problem}
+          why_it_matters={section.why_it_matters}
+          fix={section.fix}
+          severity={severity}
+        />
+
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="bg-white p-12 max-w-[820px] mx-auto">
 
-        {/* COVER */}
-        <div className="min-h-[420px] flex flex-col justify-center items-center text-center border-b pb-12 mb-16">
+        {/* PAGE 1 */}
+        <div className="min-h-[900px]">
 
-          <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">
-            Marketing Strategy Audit
-          </h1>
+          <div className="min-h-[420px] flex flex-col justify-center items-center text-center border-b pb-12 mb-16">
 
-          <p className="mt-4 text-lg text-zinc-500">
-            {domain}
-          </p>
+            <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">
+              Marketing Strategy Audit
+            </h1>
 
-          <div className="mt-12 text-sm text-zinc-400">
-            Prepared by
+            <p className="mt-4 text-lg text-zinc-500">
+              {domain}
+            </p>
+
+            <div className="mt-12 text-sm text-zinc-400">
+              Prepared by
+            </div>
+
+            <div className="text-sm text-zinc-400">
+              AI Marketing Diagnostic
+            </div>
+
           </div>
 
-          <div className="text-sm text-zinc-400">
-            AI Marketing Diagnostic
+          <div className="border-b pb-6 mb-8">
+            <h2 className="text-2xl font-semibold">
+              Marketing Clarity Score
+            </h2>
           </div>
 
-        </div>
-
-        {/* SCORE */}
-        <div className="border-b pb-6 mb-8">
-          <h2 className="text-2xl font-semibold">
-            Marketing Clarity Score
-          </h2>
-        </div>
-
-        <div className="avoid-break mb-12">
           <ScoreSection score={score} breakdown={breakdown} />
+
         </div>
 
-        {/* FORCE NEW PAGE AFTER SCORE */}
         <div className="page-break"></div>
 
-        {/* ANALYSIS */}
-        <div>
+        {/* PAGE 2 */}
+        <div className="min-h-[900px]">
 
-          {sections?.map((section: any, index: number) => {
-
-            const severity =
-              section.status === "weak"
-                ? "critical"
-                : section.status === "neutral"
-                ? "opportunity"
-                : "neutral";
-
-            return (
-              <div key={index} className="avoid-break mb-10">
-
-                <AnalysisCard
-                  label={section.category || "Analysis"}
-                  title={section.problem || "Strategic insight"}
-                  problem={section.problem}
-                  why_it_matters={section.why_it_matters}
-                  fix={section.fix}
-                  severity={severity}
-                />
-
-              </div>
-            );
-          })}
+          {firstTwo?.map((section: any, i: number) =>
+            renderCard(section, i)
+          )}
 
         </div>
 
-        {/* STRATEGIC INSIGHT */}
-        <div className="avoid-break mb-16">
+        <div className="page-break"></div>
+
+        {/* PAGE 3 */}
+        <div className="min-h-[900px]">
+
+          {secondTwo?.map((section: any, i: number) =>
+            renderCard(section, i)
+          )}
+
+        </div>
+
+        <div className="page-break"></div>
+
+        {/* PAGE 4 */}
+        <div className="min-h-[900px]">
+
           <StrategicInsight insight={insight} />
+
+          <div className="mt-16">
+            <CompetitiveGaps gaps={gaps} />
+          </div>
+
         </div>
 
-        {/* GAPS */}
-        <div className="avoid-break mb-16">
-          <CompetitiveGaps gaps={gaps} />
-        </div>
+        <div className="page-break"></div>
 
-        {/* CHART */}
-        <div className="page-break">
+        {/* PAGE 5 */}
+        <div className="min-h-[900px]">
 
           <CompetitorChart
             website={website}
@@ -127,12 +150,6 @@ export function ReportLayout({
       </div>
 
       <style jsx global>{`
-
-        .avoid-break {
-          display: block;
-          break-inside: avoid;
-          page-break-inside: avoid;
-        }
 
         .page-break {
           page-break-before: always;
