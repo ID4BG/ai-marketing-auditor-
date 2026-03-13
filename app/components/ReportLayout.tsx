@@ -35,10 +35,10 @@ export function ReportLayout({
 
   return (
     <>
-      <div className="bg-white p-12 space-y-16 max-w-[820px] mx-auto">
+      <div className="bg-white p-12 max-w-[820px] mx-auto">
 
-        {/* COVER PAGE */}
-        <div className="min-h-[420px] flex flex-col justify-center items-center text-center border-b pb-12">
+        {/* COVER */}
+        <div className="min-h-[420px] flex flex-col justify-center items-center text-center border-b pb-12 mb-16">
 
           <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">
             Marketing Strategy Audit
@@ -52,27 +52,28 @@ export function ReportLayout({
             Prepared by
           </div>
 
-
           <div className="text-sm text-zinc-400">
             AI Marketing Diagnostic
           </div>
 
         </div>
 
-        {/* SCORE HEADER */}
-        <div className="space-y-2 border-b pb-6">
+        {/* SCORE */}
+        <div className="border-b pb-6 mb-8">
           <h2 className="text-2xl font-semibold">
             Marketing Clarity Score
           </h2>
         </div>
 
-        {/* SCORE */}
-        <div className="avoid-break">
+        <div className="avoid-break mb-12">
           <ScoreSection score={score} breakdown={breakdown} />
         </div>
 
+        {/* FORCE NEW PAGE AFTER SCORE */}
+        <div className="page-break"></div>
+
         {/* ANALYSIS */}
-        <div className="space-y-6">
+        <div>
 
           {sections?.map((section: any, index: number) => {
 
@@ -84,7 +85,8 @@ export function ReportLayout({
                 : "neutral";
 
             return (
-              <div key={index} className="avoid-break">
+              <div key={index} className="avoid-break mb-10">
+
                 <AnalysisCard
                   label={section.category || "Analysis"}
                   title={section.problem || "Strategic insight"}
@@ -93,6 +95,7 @@ export function ReportLayout({
                   fix={section.fix}
                   severity={severity}
                 />
+
               </div>
             );
           })}
@@ -100,41 +103,43 @@ export function ReportLayout({
         </div>
 
         {/* STRATEGIC INSIGHT */}
-        <div className="avoid-break">
+        <div className="avoid-break mb-16">
           <StrategicInsight insight={insight} />
         </div>
 
-        {/* COMPETITOR SECTION */}
-        <div className="space-y-8">
+        {/* GAPS */}
+        <div className="avoid-break mb-16">
+          <CompetitiveGaps gaps={gaps} />
+        </div>
 
-          <div className="avoid-break">
-            <CompetitiveGaps gaps={gaps} />
-          </div>
+        {/* CHART */}
+        <div className="page-break">
 
-          <div className="avoid-break">
-            <CompetitorChart
-              website={website}
-              competitor1={competitor1}
-              competitor2={competitor2}
-              insight={insight}
-            />
-          </div>
+          <CompetitorChart
+            website={website}
+            competitor1={competitor1}
+            competitor2={competitor2}
+            insight={insight}
+          />
 
         </div>
 
       </div>
 
-      {/* PAGE BREAK CONTROL */}
       <style jsx global>{`
 
-.avoid-break {
-  display: block;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
+        .avoid-break {
+          display: block;
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
 
-`}</style>
+        .page-break {
+          page-break-before: always;
+          break-before: page;
+        }
 
+      `}</style>
     </>
   );
 }
