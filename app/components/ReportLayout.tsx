@@ -47,7 +47,6 @@ export function ReportLayout({
 
     return (
       <div key={index} className="mb-10">
-
         <AnalysisCard
           label={section.category || "Analysis"}
           title={section.problem || "Strategic insight"}
@@ -56,19 +55,18 @@ export function ReportLayout({
           fix={section.fix}
           severity={severity}
         />
-
       </div>
     );
   }
 
   return (
     <>
-      <div className="bg-white p-12 max-w-[820px] mx-auto">
+      <div className="bg-white max-w-[820px] mx-auto">
 
         {/* PAGE 1 */}
-        <div className="min-h-[900px]">
+        <div className="pdf-page p-12">
 
-          <div className="min-h-[420px] flex flex-col justify-center items-center text-center border-b pb-12 mb-16">
+          <div className="flex flex-col justify-center items-center text-center border-b pb-12 mb-16">
 
             <h1 className="text-4xl font-semibold tracking-tight text-zinc-900">
               Marketing Strategy Audit
@@ -98,10 +96,10 @@ export function ReportLayout({
 
         </div>
 
-        <div className="page-break"></div>
+        <div className="page-break" />
 
         {/* PAGE 2 */}
-        <div className="min-h-[900px]">
+        <div className="pdf-page p-12">
 
           {firstTwo?.map((section: any, i: number) =>
             renderCard(section, i)
@@ -109,10 +107,10 @@ export function ReportLayout({
 
         </div>
 
-        <div className="page-break"></div>
+        <div className="page-break" />
 
         {/* PAGE 3 */}
-        <div className="min-h-[900px]">
+        <div className="pdf-page p-12">
 
           {secondTwo?.map((section: any, i: number) =>
             renderCard(section, i)
@@ -120,10 +118,10 @@ export function ReportLayout({
 
         </div>
 
-        <div className="page-break"></div>
+        <div className="page-break" />
 
         {/* PAGE 4 */}
-        <div className="min-h-[900px]">
+        <div className="pdf-page p-12">
 
           <StrategicInsight insight={insight} />
 
@@ -133,10 +131,10 @@ export function ReportLayout({
 
         </div>
 
-        <div className="page-break"></div>
+        <div className="page-break" />
 
         {/* PAGE 5 */}
-        <div className="min-h-[900px]">
+        <div className="pdf-page p-12">
 
           <CompetitorChart
             website={website}
@@ -150,6 +148,11 @@ export function ReportLayout({
       </div>
 
       <style jsx global>{`
+
+        .pdf-page {
+          width: 100%;
+          display: block;
+        }
 
         .page-break {
           page-break-before: always;
