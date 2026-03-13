@@ -130,12 +130,13 @@ export function ReportLayout({
       {/* PAGE BREAK CONTROL */}
       <style jsx global>{`
 
-        .avoid-break {
-          break-inside: avoid;
-          page-break-inside: avoid;
-        }
+.avoid-break {
+  display: block;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 
-      `}</style>
+`}</style>
 
     </>
   );
