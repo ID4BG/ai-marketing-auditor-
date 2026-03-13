@@ -12,14 +12,15 @@ import { CompetitiveGaps as DashboardCompetitiveGaps } from "./components/Compet
 import { StrategicInsight } from "./components/StrategicInsight";
 import { CTASection } from "./components/CTASection";
 import { CompetitorChart } from "./components/CompetitorChart";
-import { CompetitivePositioningChart } from "../components/report/CompetitivePositioningChart";
 
 import { runDiagnostic } from "../lib/api";
 
 export default function Page() {
+
   const [website, setWebsite] = useState("");
   const [competitor1, setCompetitor1] = useState("");
   const [competitor2, setCompetitor2] = useState("");
+  const [language, setLanguage] = useState("en");
 
   const [result, setResult] = useState<any | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,9 +40,11 @@ export default function Page() {
       const analysis = await runDiagnostic({
         website,
         competitors: [competitor1, competitor2].filter(Boolean),
+        language,
       });
 
       setResult(analysis);
+
     } catch (error) {
       console.error("Diagnostic failed", error);
     } finally {
@@ -110,6 +113,18 @@ export default function Page() {
             onChange={(e) => setCompetitor2(e.target.value)}
           />
 
+          {/* LANGUAGE SELECTOR */}
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="border border-zinc-300 rounded-md p-2 w-full text-sm"
+          >
+            <option value="en">English</option>
+            <option value="ru">Русский</option>
+            <option value="es">Español</option>
+            <option value="hy">Հայերեն</option>
+          </select>
+
           <Button
             className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-5 rounded-md"
             onClick={runAudit}
@@ -176,15 +191,18 @@ export default function Page() {
               <StrategicInsight insight={insight} />
             </div>
 
-            {/* COMPETITIVE GAPS & CHART */}
+            {/* COMPETITIVE GAPS + CHART */}
             <div className="border-t pt-16">
               <div className="grid md:grid-cols-2 gap-8">
+
                 <DashboardCompetitiveGaps gaps={gaps} />
+
                 <CompetitorChart
                   website={website}
                   competitor1={competitor1}
                   competitor2={competitor2}
                 />
+
               </div>
             </div>
 
@@ -193,7 +211,8 @@ export default function Page() {
               <CTASection
                 onDownload={() => {
                   if (reportRef.current) {
-                    // @ts-expect-error react-to-pdf typing issue
+                    // react-to-pdf typing bug
+                    // @ts-ignore
                     toPDF(reportRef.current);
                   }
                 }}
@@ -203,9 +222,12 @@ export default function Page() {
 
           </div>
         )}
+
+        {/* FOOTER */}
         <div className="text-center text-sm text-zinc-500 pt-12">
           Built by <span className="font-medium text-zinc-700">Arnela</span> for founders — with love.
         </div>
+
       </div>
     </div>
   );

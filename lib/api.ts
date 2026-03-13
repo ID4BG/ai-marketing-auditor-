@@ -1,7 +1,11 @@
 export async function runDiagnostic(data: {
-    website: string;
-    competitors: string[];
-  }) {
+  website: string;
+  competitors: string[];
+  language?: string;
+  linkedin?: string;
+  email?: string;
+  position?: string;
+}) {
     const response = await fetch("/api/analyze", {
       method: "POST",
       headers: {

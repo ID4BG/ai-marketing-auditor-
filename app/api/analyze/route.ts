@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import OpenAI from "openai"
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
-
 /*
 ====================================================
 UTILITIES
@@ -31,9 +27,7 @@ async function fetchWebsite(url: string) {
       }
     })
 
-    const html = await res.text()
-
-    return html
+    return await res.text()
 
   } catch (error) {
     console.error("Fetch failed:", url)
@@ -41,7 +35,7 @@ async function fetchWebsite(url: string) {
   }
 }
 
-function safeJsonParse(text: string): unknown {
+function safeJsonParse(text: string): any {
   const cleaned = text
     .replace(/```json/gi, "")
     .replace(/```/g, "")
@@ -88,7 +82,6 @@ function extractMarketingSignals(html: string) {
   }
 
   const heroHeadline = getFirstMatch(/<h1[^>]*>(.*?)<\/h1>/i)
-
   const valueProposition = getFirstMatch(/<h2[^>]*>(.*?)<\/h2>/i)
 
   const ctas =
@@ -117,6 +110,10 @@ MAIN API
 
 export async function POST(req: NextRequest) {
 
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY
+  })
+
   try {
 
     const body = await req.json()
@@ -125,11 +122,50 @@ export async function POST(req: NextRequest) {
 
     const competitors = (Array.isArray(body.competitors) ? body.competitors : [
       body.competitor1,
-      body.competitor2,
-      body.competitor3
+      body.competitor2
     ])
       .filter(Boolean)
       .map((c: string) => normalizeUrl(c))
+
+    /*
+    =========================
+    CAPTURE LEAD DATA
+    =========================
+    */
+
+    const linkedin = body.linkedin || ""
+    const email = body.email || ""
+    const position = body.position || ""
+    const language = body.language || "en"
+
+    try {
+
+      await fetch(process.env.GOOGLE_SHEET_WEBHOOK as string, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          website,
+          linkedin,
+          email,
+          position,
+          language
+        })
+      })
+    
+    } catch (err) {
+      console.error("Google Sheet lead save failed", err)
+    }
+
+    console.log("NEW LEAD:", {
+      website,
+      linkedin,
+      email,
+      position,
+      language,
+      time: new Date().toISOString()
+    })
 
     if (!website) {
       return NextResponse.json(
@@ -145,7 +181,6 @@ export async function POST(req: NextRequest) {
     */
 
     const mainHTML = await fetchWebsite(website)
-
     const signals = extractMarketingSignals(mainHTML)
 
     /*
@@ -164,23 +199,22 @@ export async function POST(req: NextRequest) {
 
     /*
     ==========================================================
-    SUPER STRATEGIC PROMPT
+    IMPROVED STRATEGIC PROMPT
     ==========================================================
     */
 
     const prompt = `
-You are a world-class marketing strategist performing a professional strategic diagnostic.
+You are a senior marketing strategist performing a practical marketing audit.
 
-Your task is to produce a deep and detailed marketing audit as STRUCTURED JSON so a UI can render it.
+Write the entire report in ${language === "ru" ? "Russian" :
+      language === "es" ? "Spanish" :
+      language === "hy" ? "Armenian" : "English"}.
 
-Write as if you are a senior marketing strategist speaking directly to a startup founder.
-The tone must be direct, specific, and practical – no generic "AI" language, no buzzwords,
-no vague phrases like "leverage synergies" or "drive engagement". Every sentence should
-point to a concrete observation, implication, or recommended action.
+Your job is to identify **specific marketing problems and actionable improvements**.
 
-Do not summarize the website. Evaluate the strategic effectiveness of the messaging and positioning.
+Every insight must follow this structure:
 
-Analyze the following extracted marketing signals.
+Problem → Why it matters → Actionable Fix.
 
 WEBSITE SIGNALS
 
@@ -203,51 +237,23 @@ COMPETITOR SIGNALS
 
 ${JSON.stringify(competitorSignals)}
 
-Perform the AI Marketing Clarity Diagnostic.
+Return ONLY valid JSON.
 
-Evaluate:
-
-1. Positioning clarity
-2. Messaging clarity
-3. ICP definition
-4. Conversion funnel friction
-5. Competitive positioning
-
-Also detect:
-
-• messaging architecture
-• proof strength
-• differentiation
-• trust signals
-• conversion friction
-
-Return ONLY valid JSON (no markdown, no code fences, no commentary).
-
-Output schema (exact keys):
+Output schema:
 
 {
-  "score": number, // 0-100 overall
+  "score": number,
   "scores": {
-    "positioning": number, // 0-100
-    "messaging": number,   // 0-100
-    "icp": number,         // 0-100
-    "funnel": number       // 0-100
+    "positioning": number,
+    "messaging": number,
+    "icp": number,
+    "funnel": number
   },
-  "positioning_analysis": string, // detailed, analytical, minimum 200 words
-  "messaging_analysis": string,   // detailed, analytical, minimum 200 words
-  "competitive_gaps": string[],   // 3-7 bullets, concrete issues
-  "strategic_insight": string,    // 2-6 sentences, punchy
-  "recommendations": string[]     // 3-7 bullets, specific next steps
+  "sections": [],
+  "competitive_gaps": [],
+  "strategic_insight": "",
+  "recommendations": []
 }
-
-Constraints:
-- All scores must be integers 0-100.
-- "positioning_analysis" and "messaging_analysis" must each be at least 200 words, with
-  concrete, founder-facing critique and recommendations (no fluff).
-- Avoid generic phrases such as "overall", "in summary", "as an AI", "this section will", etc.
-  Speak plainly and precisely, as a human strategist who has reviewed the site.
-- Analyses must be high-signal and reference the extracted signals when possible.
-- Arrays must be arrays of strings (no objects).
 `
 
     /*
@@ -258,12 +264,12 @@ Constraints:
 
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      temperature: 0.4,
+      temperature: 0.3,
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "system",
-          content:
-            "You are an elite marketing strategy consultant producing deep marketing diagnostics."
+          content: "You are an elite marketing strategy consultant."
         },
         {
           role: "user",
@@ -272,41 +278,40 @@ Constraints:
       ]
     })
 
-    let text = completion.choices[0].message.content || ""
+    const text = completion.choices[0].message.content || ""
 
-    const raw = safeJsonParse(text) as any
+    const raw = safeJsonParse(text)
 
-    if (!raw || typeof raw !== "object") {
-      console.error("JSON parse failed:", text)
+    if (!raw) {
       return NextResponse.json(
         {
           score: 60,
           scores: { positioning: 60, messaging: 60, icp: 60, funnel: 60 },
-          positioning_analysis: "",
-          messaging_analysis: "",
+          sections: [],
           competitive_gaps: [],
-          strategic_insight: "Most companies lose deals because their positioning is unclear.",
+          strategic_insight: "",
           recommendations: []
         },
         { status: 200 }
       )
     }
 
-    const scores = raw.scores ?? raw.breakdown ?? {}
+    const scores = raw.scores ?? {}
 
     const shaped = {
-      score: clampScore(raw.score ?? raw.clarityScore, 60),
+      score: clampScore(raw.score, 60),
+
       scores: {
         positioning: clampScore(scores.positioning, 60),
         messaging: clampScore(scores.messaging, 60),
         icp: clampScore(scores.icp, 60),
         funnel: clampScore(scores.funnel, 60)
       },
-      positioning_analysis: asString(raw.positioning_analysis ?? raw.positioningAnalysis, ""),
-      messaging_analysis: asString(raw.messaging_analysis ?? raw.messagingAnalysis, ""),
-      competitive_gaps: asStringArray(raw.competitive_gaps ?? raw.competitiveGaps, []),
-      strategic_insight: asString(raw.strategic_insight ?? raw.strategicInsight, ""),
-      recommendations: asStringArray(raw.recommendations ?? raw.strategicRecommendations, [])
+
+      sections: raw.sections ?? [],
+      competitive_gaps: asStringArray(raw.competitive_gaps, []),
+      strategic_insight: asString(raw.strategic_insight, ""),
+      recommendations: asStringArray(raw.recommendations, [])
     }
 
     return NextResponse.json(shaped)
