@@ -6,12 +6,8 @@ import { usePDF } from "react-to-pdf";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-import { ScoreSection } from "./components/ScoreSection";
-import { AnalysisCard } from "./components/AnalysisCard";
-import { CompetitiveGaps as DashboardCompetitiveGaps } from "./components/CompetitiveGaps";
-import { StrategicInsight } from "./components/StrategicInsight";
 import { CTASection } from "./components/CTASection";
-import { CompetitorChart } from "./components/CompetitorChart";
+import { ReportLayout } from "./components/ReportLayout";
 
 import { runDiagnostic } from "../lib/api";
 
@@ -33,8 +29,13 @@ export default function Page() {
 
   const reportRef = useRef<HTMLDivElement | null>(null);
 
+  const domain = website
+    .replace(/^https?:\/\//, "")
+    .replace(/^www\./, "")
+    .split("/")[0];
+
   const { toPDF, targetRef } = usePDF({
-    filename: "marketing-audit-report.pdf",
+    filename: `${domain}-marketing-audit-report.pdf`,
   });
 
   function downloadReport() {
@@ -184,85 +185,47 @@ export default function Page() {
 
           {/* REPORT */}
           {result && (
-            <div ref={targetRef} className="space-y-16">
+            <div className="space-y-8">
 
-              <div className="space-y-6">
-
-                <ScoreSection score={score} breakdown={breakdownArray} />
-
-                {/* DOWNLOAD REPORT BUTTON */}
-                <div className="flex justify-start">
-                  <Button
-                    disabled={loading}
-                    className="bg-zinc-900 hover:bg-zinc-800 text-white h-11 px-6 rounded-md"
-                    onClick={downloadReport}
-                  >
-                    Download Strategic Report (PDF)
-                  </Button>
-                </div>
-
+              {/* DOWNLOAD BUTTON */}
+              <div className="flex justify-start">
+                <Button
+                  disabled={loading}
+                  className="bg-zinc-900 hover:bg-zinc-800 text-white h-11 px-6 rounded-md"
+                  onClick={downloadReport}
+                >
+                  Download Strategic Report (PDF)
+                </Button>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2">
-
-                {result.sections?.map((section: any, index: number) => {
-
-                  const severity =
-                    section.status === "weak"
-                      ? "critical"
-                      : section.status === "neutral"
-                      ? "opportunity"
-                      : "neutral";
-
-                  return (
-                    <AnalysisCard
-                      key={index}
-                      label={section.category || "Analysis"}
-                      title={section.problem || "Strategic insight"}
-                      problem={section.problem}
-                      why_it_matters={section.why_it_matters}
-                      fix={section.fix}
-                      severity={severity}
-                    />
-                  );
-                })}
-
-              </div>
-
-              <div className="border-t pt-16">
-                <StrategicInsight insight={insight} />
-              </div>
-
-              <div className="border-t pt-16">
-                <div className="grid md:grid-cols-2 gap-8">
-
-                  <DashboardCompetitiveGaps gaps={gaps} />
-
-                  <CompetitorChart
-                    website={website}
-                    competitor1={competitor1}
-                    competitor2={competitor2}
-                    insight={insight}
-                  />
-
-                </div>
-              </div>
-
-              <div className="border-t pt-16">
-                <CTASection
-                  onDownload={downloadReport}
-                  shareUrl={shareUrl}
+              {/* CLEAN REPORT LAYOUT */}
+              <div ref={targetRef}>
+                <ReportLayout
+                  website={website}
+                  competitor1={competitor1}
+                  competitor2={competitor2}
+                  score={score}
+                  breakdown={breakdownArray}
+                  sections={result.sections}
+                  gaps={gaps}
+                  insight={insight}
                 />
               </div>
+
+              {/* CTA */}
+              <CTASection
+                onDownload={downloadReport}
+                shareUrl={shareUrl}
+              />
 
             </div>
           )}
 
           <div className="text-center text-sm text-zinc-500 pt-12">
-            Built by <span className="font-medium text-zinc-700">Arnela</span> for founders - with love.
+            Built by <span className="font-medium text-zinc-700">Arnela</span> for founders — with love.
           </div>
 
-          </div>
+        </div>
       </div>
 
       <style jsx global>{`
@@ -272,28 +235,10 @@ export default function Page() {
             background: white !important;
           }
 
-          /* hide input panel */
           .max-w-xl {
             display: none !important;
           }
 
-          /* center report */
-          .max-w-6xl {
-            max-width: 800px !important;
-            margin: auto !important;
-          }
-
-          /* remove shadows (cause grey PDF overlay) */
-          .shadow-sm {
-            box-shadow: none !important;
-          }
-
-          /* stack cards vertically */
-          .grid {
-            grid-template-columns: 1fr !important;
-          }
-
-          /* hide buttons in pdf */
           button {
             display: none !important;
           }
