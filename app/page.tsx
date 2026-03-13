@@ -262,8 +262,45 @@ export default function Page() {
             Built by <span className="font-medium text-zinc-700">Arnela</span> for founders - with love.
           </div>
 
-        </div>
+          </div>
       </div>
+
+      <style jsx global>{`
+        @media print {
+
+          body {
+            background: white !important;
+          }
+
+          /* hide input panel */
+          .max-w-xl {
+            display: none !important;
+          }
+
+          /* center report */
+          .max-w-6xl {
+            max-width: 800px !important;
+            margin: auto !important;
+          }
+
+          /* remove shadows (cause grey PDF overlay) */
+          .shadow-sm {
+            box-shadow: none !important;
+          }
+
+          /* stack cards vertically */
+          .grid {
+            grid-template-columns: 1fr !important;
+          }
+
+          /* hide buttons in pdf */
+          button {
+            display: none !important;
+          }
+
+        }
+      `}</style>
+
     </>
   );
 }
