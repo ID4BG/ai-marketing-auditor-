@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { usePDF } from "react-to-pdf";
+import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -31,11 +30,9 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const reportRef = useRef<HTMLDivElement | null>(null);
-
-  const { toPDF } = usePDF({
-    filename: "marketing-audit-report.pdf",
-  });
+  function downloadReport() {
+    window.print();
+  }
 
   async function runAudit() {
 
@@ -94,186 +91,188 @@ export default function Page() {
     "https://www.linkedin.com/sharing/share-offsite/?url=https://yourtool.com";
 
   return (
-    <div className="min-h-screen bg-zinc-50 py-10">
-      <div className="max-w-6xl mx-auto px-6 space-y-10">
+    <>
+      <div className="min-h-screen bg-zinc-50 py-10">
+        <div className="max-w-6xl mx-auto px-6 space-y-10">
 
-        {/* HEADER */}
-        <div className="space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
-            AI Marketing Clarity Diagnostic
-          </h1>
+          {/* HEADER */}
+          <div className="space-y-3">
+            <h1 className="text-3xl font-semibold tracking-tight text-zinc-900">
+              AI Marketing Clarity Diagnostic
+            </h1>
 
-          <p className="text-base text-zinc-500">
-            Strategic marketing analysis for your website
-          </p>
-        </div>
-
-        {/* INPUT PANEL */}
-        <div className="max-w-xl space-y-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
-
-          <Input
-            placeholder="Website URL *"
-            value={website}
-            onChange={(e) => setWebsite(e.target.value)}
-          />
-
-          <Input
-            placeholder="Your Position (Founder, CEO, Marketing Lead) *"
-            value={position}
-            onChange={(e) => setPosition(e.target.value)}
-          />
-
-          <Input
-            placeholder="LinkedIn profile (or email)"
-            value={linkedin}
-            onChange={(e) => setLinkedin(e.target.value)}
-          />
-
-          <Input
-            placeholder="Email (optional if LinkedIn provided)"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-
-          <Input
-            placeholder="Competitor Website 1"
-            value={competitor1}
-            onChange={(e) => setCompetitor1(e.target.value)}
-          />
-
-          <Input
-            placeholder="Competitor Website 2"
-            value={competitor2}
-            onChange={(e) => setCompetitor2(e.target.value)}
-          />
-
-          <select
-            value={language}
-            onChange={(e) => setLanguage(e.target.value)}
-            className="border border-zinc-300 rounded-md p-2 w-full text-sm"
-          >
-            <option value="en">English</option>
-            <option value="ru">Русский</option>
-            <option value="es">Español</option>
-            <option value="hy">Հայերեն</option>
-          </select>
-
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-5 rounded-md"
-            onClick={runAudit}
-          >
-            Run Diagnostic 
-          </Button>
-
-          {error && (
-            <p className="text-sm text-red-500">{error}</p>
-          )}
-
-          {loading && (
-            <p className="text-sm text-zinc-500 animate-pulse">
-              Running marketing diagnostic...
+            <p className="text-base text-zinc-500">
+              Strategic marketing analysis for your website
             </p>
-          )}
+          </div>
 
-        </div>
+          {/* INPUT PANEL */}
+          <div className="max-w-xl space-y-4 rounded-xl border border-zinc-200 bg-white p-6 shadow-sm">
 
-        {/* REPORT */}
-        {result && (
-          <div ref={reportRef} className="space-y-16">
+            <Input
+              placeholder="Website URL *"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+            />
 
-<div className="space-y-6">
+            <Input
+              placeholder="Your Position (Founder, CEO, Marketing Lead) *"
+              value={position}
+              onChange={(e) => setPosition(e.target.value)}
+            />
 
-<ScoreSection score={score} breakdown={breakdownArray} />
+            <Input
+              placeholder="LinkedIn profile (or email)"
+              value={linkedin}
+              onChange={(e) => setLinkedin(e.target.value)}
+            />
 
-{/* DOWNLOAD REPORT BUTTON */}
-<div className="flex justify-start">
-  <Button
-  disabled={loading}
-    className="bg-zinc-900 hover:bg-zinc-800 text-white h-11 px-6 rounded-md"
-    onClick={() => {
-      if (reportRef.current) {
-        // @ts-ignore
-        toPDF(reportRef.current);
-      }
-    }}
-  >
-    Download Strategic Report (PDF)
-  </Button>
-</div>
+            <Input
+              placeholder="Email (optional if LinkedIn provided)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
 
-</div>
+            <Input
+              placeholder="Competitor Website 1"
+              value={competitor1}
+              onChange={(e) => setCompetitor1(e.target.value)}
+            />
 
-            <div className="grid gap-6 md:grid-cols-2">
+            <Input
+              placeholder="Competitor Website 2"
+              value={competitor2}
+              onChange={(e) => setCompetitor2(e.target.value)}
+            />
 
-            {result.sections?.map((section: any, index: number) => {
+            <select
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="border border-zinc-300 rounded-md p-2 w-full text-sm"
+            >
+              <option value="en">English</option>
+              <option value="ru">Русский</option>
+              <option value="es">Español</option>
+              <option value="hy">Հայերեն</option>
+            </select>
 
-const severity =
-  section.status === "weak"
-    ? "critical"
-    : section.status === "neutral"
-    ? "opportunity"
-    : "neutral";
+            <Button
+              className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-5 rounded-md"
+              onClick={runAudit}
+            >
+              Run Diagnostic
+            </Button>
 
-return (
-  <AnalysisCard
-    key={index}
+            {error && (
+              <p className="text-sm text-red-500">{error}</p>
+            )}
 
-    label={section.category || "Analysis"}
-
-    title={section.problem || "Strategic insight"}
-
-    problem={section.problem}
-
-    why_it_matters={section.why_it_matters}
-
-    fix={section.fix}
-
-    severity={severity}
-  />
-);
-})}
-
-            </div>
-
-            <div className="border-t pt-16">
-              <StrategicInsight insight={insight} />
-            </div>
-
-            <div className="border-t pt-16">
-              <div className="grid md:grid-cols-2 gap-8">
-
-                <DashboardCompetitiveGaps gaps={gaps} />
-
-                <CompetitorChart
-                website={website}
-                competitor1={competitor1}
-                competitor2={competitor2}
-                insight={insight}
-                />
-
-              </div>
-            </div>
-
-            <div className="border-t pt-16">
-              <CTASection
-                onDownload={() => {
-                  if (reportRef.current) {
-                    // @ts-ignore
-                    toPDF(reportRef.current);
-                  }
-                }}
-                shareUrl={shareUrl}
-              />
-            </div>
+            {loading && (
+              <p className="text-sm text-zinc-500 animate-pulse">
+                Running marketing diagnostic...
+              </p>
+            )}
 
           </div>
-        )}
 
-<div className="text-center text-sm text-zinc-500 pt-12">
-  Built by <span className="font-medium text-zinc-700">Arnela</span> for founders — with love.
-</div>
+          {/* REPORT */}
+          {result && (
+            <div className="space-y-16">
 
+              <div className="space-y-6">
+
+                <ScoreSection score={score} breakdown={breakdownArray} />
+
+                {/* DOWNLOAD REPORT BUTTON */}
+                <div className="flex justify-start">
+                  <Button
+                    disabled={loading}
+                    className="bg-zinc-900 hover:bg-zinc-800 text-white h-11 px-6 rounded-md"
+                    onClick={downloadReport}
+                  >
+                    Download Strategic Report (PDF)
+                  </Button>
+                </div>
+
+              </div>
+
+              <div className="grid gap-6 md:grid-cols-2">
+
+                {result.sections?.map((section: any, index: number) => {
+
+                  const severity =
+                    section.status === "weak"
+                      ? "critical"
+                      : section.status === "neutral"
+                      ? "opportunity"
+                      : "neutral";
+
+                  return (
+                    <AnalysisCard
+                      key={index}
+                      label={section.category || "Analysis"}
+                      title={section.problem || "Strategic insight"}
+                      problem={section.problem}
+                      why_it_matters={section.why_it_matters}
+                      fix={section.fix}
+                      severity={severity}
+                    />
+                  );
+                })}
+
+              </div>
+
+              <div className="border-t pt-16">
+                <StrategicInsight insight={insight} />
+              </div>
+
+              <div className="border-t pt-16">
+                <div className="grid md:grid-cols-2 gap-8">
+
+                  <DashboardCompetitiveGaps gaps={gaps} />
+
+                  <CompetitorChart
+                    website={website}
+                    competitor1={competitor1}
+                    competitor2={competitor2}
+                    insight={insight}
+                  />
+
+                </div>
+              </div>
+
+              <div className="border-t pt-16">
+                <CTASection
+                  onDownload={downloadReport}
+                  shareUrl={shareUrl}
+                />
+              </div>
+
+            </div>
+          )}
+
+          <div className="text-center text-sm text-zinc-500 pt-12">
+            Built by <span className="font-medium text-zinc-700">Arnela</span> for founders — with love.
+          </div>
+
+        </div>
       </div>
-    </div>
+
+      <style jsx global>{`
+        @media print {
+          body {
+            background: white;
+          }
+
+          .max-w-xl {
+            display: none !important;
+          }
+
+          button {
+            display: none !important;
+          }
+        }
+      `}</style>
+    </>
   );
 }
